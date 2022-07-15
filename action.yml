@@ -1,0 +1,32 @@
+name: python-extract-java
+description: This is an action to assign yourself to an issue for a repo you are not a contributor to.
+author: Hackerghost
+branding:
+  icon: 'thumbs-up'
+  color: 'white'
+inputs:
+  PAT:
+    description: 'The GITHUB_TOKEN repo secret'
+    default: 'No PAT provided'
+  qscore:
+    description: 'provide the QScored api'
+    default: 'No qscore provided'
+  username:
+    description: 'provide the username '
+    default: 'No username provided'
+  projectname:
+    description: 'provide the projectname '
+    default: 'No username projectname'
+
+runs:
+  using: "composite"
+  steps:
+      - name: Download DesigniteJava
+        run: wget "https://www.designite-tools.com/static/download/DJE/DesigniteJava.jar"
+        shell: sh
+      - name: Analyze project with DesigniteJava
+        run: |
+          java -jar DesigniteJava.jar -ci -repo $GITHUB_REPOSITORY -pat ${{ inputs.PAT }} 
+          ls
+          curl -X PUT -H "Authorization: Token ${{ inputs.qscore }}" -H "repository-link:https://github.com/" + ${{ github.repository }} -H "username:${{ inputs.username }}" -H "Content-Type: mulitpart/form-data" --url "https://qscored.com/api/upload/file.xml?is_open_access=on&version=$GITHUB_RUN_NUMBER&project_name=${{ inputs.projectname }}" -F "file=@Designite_output/DesigniteAnalysis.xml"
+        shell: sh
